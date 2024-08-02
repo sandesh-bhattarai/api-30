@@ -7,6 +7,8 @@ const { bodyValidator } = require("../../middlewares/validator.middleware");
 const bannerController = require("./banner.controller");
 const { BannerCreateDTO } = require("./banner.request");
 
+// /banner/list-home
+router.get('/list-home', bannerController.listForHome)
 
 router.route('/')
     .post(checklogin, allowUser([UserTypes.ADMIN]), setPath('/banner'), uploader.single("image"), bodyValidator(BannerCreateDTO), bannerController.create)

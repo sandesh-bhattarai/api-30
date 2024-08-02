@@ -15,7 +15,7 @@ class AuthController{
             const today = Date.now()
 
             if(tokenCreatedAt < today) {
-                throw {status: 400, message: "Token expired"}
+                throw {status: 400, detail:{token: "expired"}, message: "Token expired"}
             }
 
             // to activate 

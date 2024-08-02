@@ -13,7 +13,7 @@ const UserCreateDto = Joi.object({
     }),
     confirmPassword: Joi.string().equal(Joi.ref('password')).required(),
     address: Joi.string().empty().optional(),
-    phone: Joi.string().min(10).max(15),
+    phone: Joi.string().min(10).max(20),
     image: Joi.string().optional(),
     role: Joi.string().regex(/^(admin|seller|customer)$/).required().messages({
         "string.pattern.base": "Role can be admin or seller or customer"

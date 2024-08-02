@@ -1,13 +1,14 @@
-const bannerSvc = require("./banner.service");
+const slugify = require("slugify");
+const brandSvc = require("./brand.service");
 const { deleteFile } = require("../../utilities/helpers");
 
-class BannerController {
+class BrandController {
     #id;
-    #banner;
+    #brand;
 
     /**
-     * This function is used to create the banner detail. 
-     * Only Admin user can create a banner
+     * This function is used to create the brand detail. 
+     * Only Admin user can create a brand
      * @param {import("express").Request} req 
      * @param {import("express").Response} res 
      * @param {import("express").NextFunction} next 
@@ -18,17 +19,20 @@ class BannerController {
             if(req.file) {
                 data.image = req.file.filename
             }
-            
+            // slug Apple => Apple => apple
+            data.slug = slugify(data.name, {
+                lower: true
+            })  // apple
             data.createdBy = req.authUser._id;
 
-            const banner = await bannerSvc.store(data);
+            const brand = await brandSvc.store(data);
             res.json({
-                result: banner, 
-                message: "Banner created successfully",
+                result: brand, 
+                message: "Brand created successfully",
                 meta: null
             })
         } catch(exception) {
-            console.log("BannerController | create | exception", exception)
+            console.log("BrandController | create | exception", exception)
             next(exception)
         }
     }
@@ -54,7 +58,7 @@ class BannerController {
                     ]
                 }
             }
-            const {data, count} = await bannerSvc.listAllData({
+            const {data, count} = await brandSvc.listAllData({
                 limit: limit, 
                 skip: skip, 
                 sort: sorting, 
@@ -63,7 +67,7 @@ class BannerController {
 
             res.json({
                 result: data, 
-                message: "Banner List",
+                message: "Brand List",
                 meta: {
                     currentPage: page,
                     total: count, 
@@ -79,11 +83,11 @@ class BannerController {
     #validateId = async (req) => {
         try {
             this.#id = req.params.id;
-            this.#banner = await bannerSvc.getSingleDataByFilter({
+            this.#brand = await brandSvc.getSingleDataByFilter({
                 _id: this.#id
             })
-            if(!this.#banner) {
-                throw {status: 404, message: "Banner not found"}
+            if(!this.#brand) {
+                throw {status: 404, message: "Brand not found"}
             }
         } catch(exception) {
             throw exception
@@ -94,8 +98,8 @@ class BannerController {
         try {
             await this.#validateId(req);
             res.json({
-                result: this.#banner, 
-                message: "Banner Detail",
+                result: this.#brand, 
+                message: "Brand Detail",
                 meta: null
             })
         } catch(exception) {
@@ -106,21 +110,21 @@ class BannerController {
     update = async (req, res, next) => {
         try {
             await this.#validateId(req);
-            // this.#id, this.#banner
+            // this.#id, this.#brand
 
             const data = req.body 
             if(req.file) {
                 data.image = req.file.filename;
             }
 
-            const response = await bannerSvc.updateById(this.#id, data);
+            const response = await brandSvc.updateById(this.#id, data);
             // 
             if(req.file) {
-                deleteFile('./public/uploads/banner/'+response.image)
+                deleteFile('./public/uploads/brand/'+response.image)
             }
             res.json({
                 result: data,  
-                message: "Banner Updated successfully",
+                message: "Brand Updated successfully",
                 meta: null
             })
         } catch(exception) {
@@ -132,13 +136,13 @@ class BannerController {
         try {
             await this.#validateId(req)
             // 
-            const response = await bannerSvc.deleteById(this.#id);
+            const response = await brandSvc.deleteById(this.#id);
             if(response.image) {
-                deleteFile('./public/uploads/banner/'+response.image)
+                deleteFile('./public/uploads/brand/'+response.image)
             }
             res.json({
                 result: null,
-                message: "Banner deleted successfully.",
+                message: "Brand deleted successfully.",
                 meta: null
             })
         } catch(exception) {
@@ -146,26 +150,37 @@ class BannerController {
         }
     }
 
-    listForHome = async(req, res, next) => {
+    getBySlug = async(req, res, next) => {
         try {
-            const {data} = await bannerSvc.listAllData({
-                limit: 10,
-                skip: 0,
-                sort: {_id: -1},
-                filter: {
-                    status: "active"
-                }
+            const slug = req.params.slug;
+            const brand = await brandSvc.getSingleDataByFilter({
+                slug: slug
             })
+            if(!brand) {
+                throw {status: 404, message: "Brand does not exists"}
+            }
+
+            // TODO: Fetch product list by Brand 
+
             res.json({
-                result: data,
-                message: "Banner listed successfully.",
-                meta: null
+                result: {
+                    detail: brand ,
+                    product: null
+                }, 
+                meta: {
+                    // TODO: Calculate these values
+                    total: 0,
+                    currentPage: 1, 
+                    limit: 15, 
+                    totalPage: 1
+                },
+                message: "Brand Detail with product"
             })
+
         } catch(exception) {
             next(exception)
         }
     }
-
 }  
 
-module.exports = new BannerController()
+module.exports = new BrandController()
