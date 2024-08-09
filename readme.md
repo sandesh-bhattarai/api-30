@@ -351,3 +351,56 @@ users
     - createdAt
     - updatedAt
 
+
+
+// a. Add to cart 
+    => loggedInuser, role => customer, admin 
+        {
+            productId: '', 
+            qty: number
+        }
+
+    ===> cartDetails,
+        _id, orderId => nullable, productId, buyerId, product: {title, price, discount}, price, sellerId, status
+        initial phase 
+        productDetail: 
+            orderId: null,
+            productId: req.body.productId, 
+            buyerId: req.authUser._id, 
+            product: {
+                title: productDetail.title, 
+                price: productDetail.pirce, 
+                discount: productDetail.discount
+            },
+            price: req.body.qty * productDetail.afterDiscount, 
+            sellerId: productDetail.sellerId, 
+            status: "booked"
+b. Cart Fetch 
+    -> loggedInUser._id
+        => CartModel.find({
+            buyerId: loggedInUser._id,
+            orderId: {$eq: null}
+        })
+
+c. create order 
+    => orders 
+        _id , buyerId, cartDetail: [cartDetials._id], subtotal, discounts, service, vat, total, status, isPaid
+
+        subtotal - discounts + service + tax => total
+
+    payload {cartId: [id], discounts: {}}
+    => 
+    const cartDetail = CartDetails.find({
+        _id: {$in: req.body.cartId}
+    })
+        {
+            buyerId: req.authUser._id, 
+            cartDetail: cartId,
+            stauts: "pending",
+            isPaid: false
+        }
+
+
+    CartDetails.updateMany({
+    _id: {$in: req.body.cartId}
+    }, {$set: {orderId: order._id}})

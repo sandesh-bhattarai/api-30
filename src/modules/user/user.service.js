@@ -67,6 +67,44 @@ class UserService{
         }
     }
 
+    listAllByFilter = async(filter) => {
+        try {
+            // console.log(filter);
+            // const list = await UserModel.find(filter, {password: 0, __v: 0, activationToken: 0, activeFor: 0, createdAt: 0, updatedAt: 0})
+            const list = await UserModel.aggregate(
+                [
+                    {
+                      '$match': {
+                        ...filter
+                      }
+                    }, {
+                      '$lookup': {
+                        'from': 'chats', 
+                        'localField': '_id', 
+                        'foreignField': 'reciever', 
+                        'as': 'message'
+                      }
+                    },
+                    // filter match
+                    {
+                        '$project': {
+                            _id: '$_id',
+                            name: '$name',
+                            email: '$email',
+                            image: "$image",
+                            role: "$role",
+                            status: "$status",
+                            message: "$message"
+                        }
+                    }
+                ]
+            ) 
+            return list;
+        } catch(exception) {
+            throw exception
+        }
+    }
+
 }
 
 module.exports = new UserService()

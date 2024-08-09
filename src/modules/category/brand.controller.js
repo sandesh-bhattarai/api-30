@@ -40,7 +40,7 @@ class BrandController {
     index = async (req, res, next) => {
         try{
             // pagination 
-            const page = +req.query.page || 1;
+            const page = +req.aquery.page || 1;
             const limit = +req.query.limit || 10;
             const skip = (page - 1) * limit;
             
